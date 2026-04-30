@@ -1,26 +1,23 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import axiosInstance from "@/api/axiosInstance" // Import Axios Instance
+import axiosInstance from "@/api/axiosInstance"
 import type { Book, PaginatedResponse } from "@/types/api"
 import { Link } from "react-router-dom"
 
 export default function Catalog() {
     const [books, setBooks] = useState<Book[]>([])
     const [loading, setLoading] = useState(true)
-
-    const token = localStorage.getItem("access_token")
+    const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
 
     useEffect(() => {
         const fetchBooks = async () => {
             try {
-                // AXIOS: URL lebih singkat, tidak perlu manual .json()
                 const response = await axiosInstance.get<PaginatedResponse<Book>>('/api/books')
                 setBooks(response.data.data || [])
             } catch (err: any) {
-                console.error("Gagal load buku:", err.message)
+                console.error("Failed to load books:", err.message)
             } finally {
                 setLoading(false)
             }
@@ -28,56 +25,84 @@ export default function Catalog() {
         fetchBooks()
     }, [])
 
-    const handleAddToLibrary = async (bookId: string) => {
-        if (!token) return toast.error("Silakan login terlebih dahulu!")
-
+    const handleAddToLibrary = async (e: React.MouseEvent, bookId: string) => {
+        e.preventDefault()
+        e.stopPropagation()
+        if (!token) return toast.error("Please sign in first.")
         try {
-            // AXIOS: Tidak perlu lagi menulis Header Authorization! Satpam yang urus.
             await axiosInstance.post('/api/library/', { book_id: bookId })
-            toast.success("Buku berhasil ditambahkan ke rak!")
+            toast.success("Added to your shelf.")
         } catch (err: any) {
-            // AXIOS Error Handling: Ambil pesan error asli dari Golang-mu
-            const errorMessage = err.response?.data?.error || err.message
-            toast.error(errorMessage)
+            toast.error(err.response?.data?.error || err.message)
         }
     }
 
-    if (loading) return <div className="p-10 text-center">Memuat katalog...</div>
-
     return (
-        <div className="max-w-6xl mx-auto p-8">
-            <h1 className="text-3xl font-bold mb-8 text-slate-900">Katalog Buku Publik</h1>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {books.map((book) => (
-                    <Card key={book.id} className="flex flex-col overflow-hidden hover:shadow-lg transition-shadow">
-                        <Link to={`/book/${book.id}`} className="block">
-                            <div className="h-48 bg-slate-200 w-full shrink-0">
-                                {book.cover_url ? (
-                                    <img src={book.cover_url} alt={book.title} className="w-full h-full object-cover" />
-                                ) : (
-                                    <div className="flex items-center justify-center h-full text-slate-400">No Cover</div>
-                                )}
-                            </div>
-                            <CardHeader className="p-4 pb-2 grow hover:text-blue-600 transition-colors">
-                                <CardTitle className="text-lg line-clamp-1">{book.title}</CardTitle>
-                                <CardDescription className="text-sm">{book.authors?.join(", ")}</CardDescription>
-                            </CardHeader>
-                        </Link>
+        <div className="max-w-6xl mx-auto px-6 py-16 md:py-20">
+            <header className="mb-16 max-w-2xl">
+                <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-4">The Catalog</p>
+                <h1 className="font-display text-5xl md:text-6xl tracking-tight leading-[1.05]">
+                    Books, <span className="italic font-light">curated quietly.</span>
+                </h1>
+                <p className="text-muted-foreground mt-5 leading-relaxed">
+                    Browse the public catalog. Save what speaks to you.
+                </p>
+            </header>
 
-                        <CardContent className="p-4 pt-0">
-                            <p className="text-xs text-slate-500 mt-2">ISBN: {book.isbn || "N/A"}</p>
-                        </CardContent>
-
-                        {token && (
-                            <CardFooter className="p-4 pt-0">
-                                <Button variant="secondary" className="w-full" onClick={() => handleAddToLibrary(book.id)}>
-                                    Simpan ke Rak
+            {loading ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-8 gap-y-12">
+                    {Array.from({ length: 8 }).map((_, i) => (
+                        <div key={i} className="space-y-3 animate-pulse">
+                            <div className="aspect-[2/3] bg-muted rounded-sm" />
+                            <div className="h-4 bg-muted rounded w-3/4" />
+                            <div className="h-3 bg-muted rounded w-1/2" />
+                        </div>
+                    ))}
+                </div>
+            ) : books.length === 0 ? (
+                <div className="text-center py-24 text-muted-foreground border-t border-border">
+                    The shelves are empty for now.
+                </div>
+            ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-8 gap-y-14">
+                    {books.map((book) => (
+                        <article key={book.id} className="group">
+                            <Link to={`/book/${book.id}`} className="block">
+                                <div className="aspect-[2/3] bg-muted overflow-hidden mb-4 rounded-sm">
+                                    {book.cover_url ? (
+                                        <img
+                                            src={book.cover_url}
+                                            alt={book.title}
+                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                                            loading="lazy"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-xs text-muted-foreground">
+                                            No cover
+                                        </div>
+                                    )}
+                                </div>
+                                <h3 className="font-display text-lg leading-snug line-clamp-2 group-hover:underline underline-offset-4 decoration-1">
+                                    {book.title}
+                                </h3>
+                                <p className="text-sm text-muted-foreground mt-1 line-clamp-1">
+                                    {book.authors?.join(", ") || "Unknown"}
+                                </p>
+                            </Link>
+                            {token && (
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="mt-3 px-0 h-auto text-xs uppercase tracking-[0.15em] text-muted-foreground hover:text-foreground hover:bg-transparent"
+                                    onClick={(e) => handleAddToLibrary(e, book.id)}
+                                >
+                                    + Save to shelf
                                 </Button>
-                            </CardFooter>
-                        )}
-                    </Card>
-                ))}
-            </div>
+                            )}
+                        </article>
+                    ))}
+                </div>
+            )}
         </div>
     )
 }
