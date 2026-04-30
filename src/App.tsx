@@ -20,10 +20,10 @@ function App() {
             <Route path="/" element={<Catalog />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/dashboard" element={<Dashboard />} />
-            {/* Jika ada yang iseng ngetik URL ngawur, arahkan ke Katalog */}
-            <Route path="*" element={<Navigate to="/" replace />} />
             <Route path="/book/:id" element={<BookDetail />} />
             <Route path="/library/:bookId" element={<LibraryBookDetail />} />
+            {/* Jika ada yang iseng ngetik URL ngawur, arahkan ke Katalog */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
         <Toaster richColors position="top-center" />
