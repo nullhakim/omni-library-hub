@@ -1,38 +1,46 @@
-import { Link, useNavigate } from "react-router-dom"
+import { Link, NavLink, useNavigate, useLocation } from "react-router-dom"
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 
 export default function Navbar() {
     const navigate = useNavigate()
-    const token = localStorage.getItem("access_token")
+    const location = useLocation()
+    const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
 
     const handleLogout = () => {
         localStorage.removeItem("access_token")
-        navigate("/auth") // Tendang kembali ke halaman login
+        localStorage.removeItem("refresh_token")
+        navigate("/auth")
     }
 
+    const linkClass = ({ isActive }: { isActive: boolean }) =>
+        cn(
+            "text-sm tracking-wide transition-colors",
+            isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground",
+        )
+
     return (
-        <nav className="bg-white border-b border-slate-200 sticky top-0 z-10">
-            <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-                <div className="font-bold text-xl text-slate-800">
-                    <Link to="/">📚 OmniLibrary</Link>
-                </div>
+        <nav className="sticky top-0 z-30 backdrop-blur-md bg-background/80 border-b border-border">
+            <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+                <Link to="/" className="font-display text-xl tracking-tight">
+                    Omni <span className="italic font-light">Library</span>
+                </Link>
 
-                <div className="flex gap-4 items-center">
-                    <Link to="/" className="text-sm font-medium text-slate-600 hover:text-slate-900">
-                        Katalog Publik
-                    </Link>
-
+                <div className="flex gap-6 items-center">
+                    <NavLink to="/catalog" className={linkClass}>Catalog</NavLink>
+                    {token && (
+                        <NavLink to="/dashboard" className={linkClass}>Shelf</NavLink>
+                    )}
                     {token ? (
-                        <>
-                            <Link to="/dashboard" className="text-sm font-medium text-slate-600 hover:text-slate-900">
-                                Dashboard VIP
-                            </Link>
-                            <Button variant="outline" size="sm" onClick={handleLogout}>Logout</Button>
-                        </>
+                        <Button variant="outline" size="sm" onClick={handleLogout} className="rounded-full">
+                            Sign out
+                        </Button>
                     ) : (
-                        <Link to="/auth">
-                            <Button size="sm">Login / Register</Button>
-                        </Link>
+                        location.pathname !== "/auth" && (
+                            <Link to="/auth">
+                                <Button size="sm" className="rounded-full">Sign in</Button>
+                            </Link>
+                        )
                     )}
                 </div>
             </div>

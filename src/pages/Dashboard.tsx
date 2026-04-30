@@ -1,18 +1,16 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import type { UserBookResponse } from "@/types/api"
 import axiosInstance from "@/api/axiosInstance"
 
 export default function Dashboard() {
     const navigate = useNavigate()
-    const token = localStorage.getItem("access_token")
+    const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
 
     const [isbn, setIsbn] = useState("")
     const [loadingFetch, setLoadingFetch] = useState(false)
@@ -23,13 +21,12 @@ export default function Dashboard() {
         if (!token) navigate("/auth")
     }, [token, navigate])
 
-    // 1. GET LIBRARY
     const fetchMyLibrary = async () => {
         try {
             const response = await axiosInstance.get('/api/library/')
             setMyLibrary(response.data.data || [])
-        } catch (err: any) {
-            console.error("Gagal load library")
+        } catch {
+            // silent
         } finally {
             setLoadingLibrary(false)
         }
@@ -37,15 +34,15 @@ export default function Dashboard() {
 
     useEffect(() => {
         if (token) fetchMyLibrary()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [token])
 
-    // 2. FETCH BOOK API
     const handleFetchBookAPI = async () => {
-        if (!isbn) return toast.error("ISBN tidak boleh kosong")
+        if (!isbn) return toast.error("ISBN is required")
         setLoadingFetch(true)
         try {
             await axiosInstance.post('/api/books/fetch', { isbn })
-            toast.success(`Buku berhasil ditarik ke database!`)
+            toast.success("Book added to the catalog.")
             setIsbn("")
         } catch (err: any) {
             toast.error(err.response?.data?.error || err.message)
@@ -57,66 +54,86 @@ export default function Dashboard() {
     if (!token) return null
 
     return (
-        <div className="max-w-6xl mx-auto p-8 space-y-8">
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-                <h1 className="text-2xl font-bold text-slate-900">Dashboard & Rak Buku</h1>
-            </div>
+        <div className="max-w-6xl mx-auto px-6 py-16 space-y-16">
+            <header className="max-w-2xl">
+                <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-4">Your shelf</p>
+                <h1 className="font-display text-5xl md:text-6xl tracking-tight leading-[1.05]">
+                    What you're <span className="italic font-light">reading.</span>
+                </h1>
+            </header>
 
-            {/* SEKSI: Fetch Buku API */}
-            <Card className="max-w-xl">
-                <CardHeader>
-                    <CardTitle>Tarik Data Buku dari Google</CardTitle>
-                    <CardDescription>Buku akan masuk ke Katalog Publik.</CardDescription>
-                </CardHeader>
-                <CardContent className="flex gap-4">
-                    <Input placeholder="Masukkan ISBN..." value={isbn} onChange={(e) => setIsbn(e.target.value)} />
-                    <Button onClick={handleFetchBookAPI} disabled={loadingFetch || !isbn}>
-                        {loadingFetch ? "Tarik..." : "Fetch"}
+            {/* Add by ISBN */}
+            <section className="border border-border rounded-lg p-6 md:p-8 bg-card max-w-2xl">
+                <h2 className="font-display text-xl mb-1">Add a book by ISBN</h2>
+                <p className="text-sm text-muted-foreground mb-5">Pull metadata from Google Books into the catalog.</p>
+                <div className="flex flex-col sm:flex-row gap-3">
+                    <div className="flex-1 space-y-2">
+                        <Label htmlFor="isbn" className="sr-only">ISBN</Label>
+                        <Input id="isbn" placeholder="e.g. 9780143127741" value={isbn} onChange={(e) => setIsbn(e.target.value)} className="h-11" />
+                    </div>
+                    <Button onClick={handleFetchBookAPI} disabled={loadingFetch || !isbn} className="rounded-full h-11 px-6">
+                        {loadingFetch ? "Fetching…" : "Fetch"}
                     </Button>
-                </CardContent>
-            </Card>
+                </div>
+            </section>
 
-            {/* SEKSI: Rak Buku User */}
-            <div>
-                <h2 className="text-xl font-bold mb-4 text-slate-800">Rak Buku Saya</h2>
+            {/* Library list */}
+            <section>
+                <div className="flex items-baseline justify-between mb-8 border-b border-border pb-4">
+                    <h2 className="font-display text-2xl">My books</h2>
+                    <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                        {myLibrary.length} {myLibrary.length === 1 ? "title" : "titles"}
+                    </span>
+                </div>
+
                 {loadingLibrary ? (
-                    <p className="text-slate-500">Memuat rak buku...</p>
+                    <p className="text-muted-foreground text-sm">Loading…</p>
                 ) : myLibrary.length === 0 ? (
-                    <div className="p-8 border-2 border-dashed rounded-lg text-center text-slate-500">
-                        Rak bukumu masih kosong. Pergi ke Katalog dan tambahkan buku!
+                    <div className="py-20 text-center border border-dashed border-border rounded-lg">
+                        <p className="text-muted-foreground mb-4">Your shelf is empty.</p>
+                        <Link to="/catalog">
+                            <Button variant="outline" className="rounded-full">Browse the catalog</Button>
+                        </Link>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {myLibrary.map((item) => (
-                            <Card key={item.id} className="flex gap-4 p-4 border-l-4 border-l-blue-500 hover:shadow-md transition-shadow">
-                                <div className="w-24 h-32 bg-slate-200 shrink-0 rounded overflow-hidden">
-                                    {item.book?.cover_url ? (
-                                        <img src={item.book.cover_url} alt="Cover" className="w-full h-full object-cover" />
-                                    ) : (
-                                        <div className="h-full flex items-center justify-center text-xs text-slate-400">No Cover</div>
-                                    )}
-                                </div>
-                                <div className="flex flex-col grow justify-between">
-                                    <div>
-                                        <h3 className="font-bold line-clamp-1">{item.book?.title || "Buku Unknown"}</h3>
-                                        <p className="text-xs text-slate-500 mt-1">Status: <span className="font-semibold text-blue-600">{item.status}</span></p>
-                                        <p className="text-xs text-slate-500">Halaman: {item.current_page} / {item.book?.page_count}</p>
-                                        <p className="text-xs text-slate-500">Rating: ⭐ {item.rating}</p>
-                                    </div>
-                                    <div className="flex mt-2">
-                                        {/* PERHATIKAN: URL Dinamis menggunakan item.id (ID relasi user_book) */}
-                                        <Link to={`/library/${item.id}`} className="w-full">
-                                            <Button size="sm" variant="secondary" className="w-full text-xs">
-                                                Lihat Detail & Catatan
-                                            </Button>
-                                        </Link>
-                                    </div>
-                                </div>
-                            </Card>
-                        ))}
-                    </div>
+                    <ul className="divide-y divide-border">
+                        {myLibrary.map((item) => {
+                            const pct = item.book?.page_count
+                                ? Math.round((item.current_page / item.book.page_count) * 100)
+                                : 0
+                            return (
+                                <li key={item.id}>
+                                    <Link to={`/library/${item.id}`} className="grid grid-cols-12 gap-6 py-6 group items-center">
+                                        <div className="col-span-2 sm:col-span-1">
+                                            <div className="aspect-[2/3] bg-muted overflow-hidden rounded-sm">
+                                                {item.book?.cover_url ? (
+                                                    <img src={item.book.cover_url} alt="" className="w-full h-full object-cover" />
+                                                ) : null}
+                                            </div>
+                                        </div>
+                                        <div className="col-span-7 sm:col-span-6">
+                                            <h3 className="font-display text-lg leading-snug group-hover:underline underline-offset-4 decoration-1 line-clamp-1">
+                                                {item.book?.title || "Untitled"}
+                                            </h3>
+                                            <p className="text-sm text-muted-foreground line-clamp-1 mt-1">
+                                                {item.book?.authors?.join(", ")}
+                                            </p>
+                                        </div>
+                                        <div className="col-span-3 sm:col-span-3">
+                                            <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-1">Status</p>
+                                            <p className="text-sm">{item.status}</p>
+                                        </div>
+                                        <div className="hidden sm:block sm:col-span-2 text-right">
+                                            <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-1">Progress</p>
+                                            <p className="font-display text-base">{pct}%</p>
+                                        </div>
+                                    </Link>
+                                </li>
+                            )
+                        })}
+                    </ul>
                 )}
-            </div>
+            </section>
         </div>
     )
 }
