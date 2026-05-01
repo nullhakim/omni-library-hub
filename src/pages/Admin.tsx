@@ -36,6 +36,33 @@ interface BookFormState {
     page_count: number
 }
 
+// Normalize any backend date string (ISO timestamp or YYYY-MM-DD) to YYYY-MM-DD using UTC.
+function toDateOnly(value: string | undefined | null): string {
+    if (!value) return ""
+    const ymd = /^(\d{4})-(\d{2})-(\d{2})/.exec(value)
+    if (ymd) return `${ymd[1]}-${ymd[2]}-${ymd[3]}`
+    const d = new Date(value)
+    if (isNaN(d.getTime())) return ""
+    const y = d.getUTCFullYear()
+    const m = String(d.getUTCMonth() + 1).padStart(2, "0")
+    const day = String(d.getUTCDate()).padStart(2, "0")
+    return `${y}-${m}-${day}`
+}
+
+function parseDateOnly(value: string): Date | undefined {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value)
+    if (!m) return undefined
+    const d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]))
+    return isNaN(d.getTime()) ? undefined : d
+}
+
+function formatDateUTC(d: Date): string {
+    const y = d.getUTCFullYear()
+    const m = String(d.getUTCMonth() + 1).padStart(2, "0")
+    const day = String(d.getUTCDate()).padStart(2, "0")
+    return `${y}-${m}-${day}`
+}
+
 const emptyForm: BookFormState = {
     title: "",
     isbn: "",
