@@ -122,10 +122,10 @@ export default function Admin() {
         try {
             const payload = buildPayload()
             if (editingId) {
-                await axiosInstance.put(`/api/admin/${editingId}`, payload)
+                await axiosInstance.put(`/api/books/${editingId}`, payload)
                 toast.success("Book updated.")
             } else {
-                await axiosInstance.post("/api/admin/manual", payload)
+                await axiosInstance.post("/api/books/manual", payload)
                 toast.success("Book created.")
             }
             setDialogOpen(false)
@@ -140,7 +140,7 @@ export default function Admin() {
     const handleDelete = async () => {
         if (!deleteId) return
         try {
-            await axiosInstance.delete(`/api/admin/${deleteId}`)
+            await axiosInstance.delete(`/api/books/${deleteId}`)
             toast.success("Book deleted.")
             setDeleteId(null)
             fetchBooks()
