@@ -283,11 +283,34 @@ export default function Admin() {
                             <Input value={form.cover_url} onChange={(e) => setForm({ ...form, cover_url: e.target.value })} />
                         </FormField>
                         <FormField label="Published date">
-                            <Input
-                                value={form.published_date}
-                                onChange={(e) => setForm({ ...form, published_date: e.target.value })}
-                                placeholder="2023-05-01"
-                            />
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        className={cn(
+                                            "w-full justify-start text-left font-normal",
+                                            !form.published_date && "text-muted-foreground"
+                                        )}
+                                    >
+                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                        {form.published_date
+                                            ? format(parseDateOnly(form.published_date) ?? new Date(), "PPP")
+                                            : <span>Pick a date</span>}
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                    <Calendar
+                                        mode="single"
+                                        selected={parseDateOnly(form.published_date)}
+                                        onSelect={(d) =>
+                                            setForm({ ...form, published_date: d ? formatDateUTC(d) : "" })
+                                        }
+                                        initialFocus
+                                        className={cn("p-3 pointer-events-auto")}
+                                    />
+                                </PopoverContent>
+                            </Popover>
                         </FormField>
                         <FormField label="Page count">
                             <Input
