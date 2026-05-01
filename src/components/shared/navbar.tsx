@@ -1,11 +1,13 @@
 import { Link, NavLink, useNavigate, useLocation } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { isAdmin } from "@/lib/auth"
 
 export default function Navbar() {
     const navigate = useNavigate()
     const location = useLocation()
     const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
+    const admin = token ? isAdmin() : false
 
     const handleLogout = () => {
         localStorage.removeItem("access_token")
@@ -30,6 +32,9 @@ export default function Navbar() {
                     <NavLink to="/catalog" className={linkClass}>Catalog</NavLink>
                     {token && (
                         <NavLink to="/dashboard" className={linkClass}>Shelf</NavLink>
+                    )}
+                    {admin && (
+                        <NavLink to="/admin" className={linkClass}>Admin</NavLink>
                     )}
                     {token ? (
                         <Button variant="outline" size="sm" onClick={handleLogout} className="rounded-full">
