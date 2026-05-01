@@ -2,10 +2,15 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
+import { CalendarIcon } from "lucide-react"
+import { format } from "date-fns"
+import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import {
     AlertDialog,
@@ -29,6 +34,33 @@ interface BookFormState {
     cover_url: string
     published_date: string
     page_count: number
+}
+
+// Normalize any backend date string (ISO timestamp or YYYY-MM-DD) to YYYY-MM-DD using UTC.
+function toDateOnly(value: string | undefined | null): string {
+    if (!value) return ""
+    const ymd = /^(\d{4})-(\d{2})-(\d{2})/.exec(value)
+    if (ymd) return `${ymd[1]}-${ymd[2]}-${ymd[3]}`
+    const d = new Date(value)
+    if (isNaN(d.getTime())) return ""
+    const y = d.getUTCFullYear()
+    const m = String(d.getUTCMonth() + 1).padStart(2, "0")
+    const day = String(d.getUTCDate()).padStart(2, "0")
+    return `${y}-${m}-${day}`
+}
+
+function parseDateOnly(value: string): Date | undefined {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value)
+    if (!m) return undefined
+    const d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]))
+    return isNaN(d.getTime()) ? undefined : d
+}
+
+function formatDateUTC(d: Date): string {
+    const y = d.getUTCFullYear()
+    const m = String(d.getUTCMonth() + 1).padStart(2, "0")
+    const day = String(d.getUTCDate()).padStart(2, "0")
+    return `${y}-${m}-${day}`
 }
 
 const emptyForm: BookFormState = {
@@ -94,7 +126,7 @@ export default function Admin() {
             authors: (book.authors || []).join(", "),
             description: book.description || "",
             cover_url: book.cover_url || "",
-            published_date: book.published_date || "",
+            published_date: toDateOnly(book.published_date),
             page_count: book.page_count || 0,
         })
         setDialogOpen(true)
@@ -251,11 +283,34 @@ export default function Admin() {
                             <Input value={form.cover_url} onChange={(e) => setForm({ ...form, cover_url: e.target.value })} />
                         </FormField>
                         <FormField label="Published date">
-                            <Input
-                                value={form.published_date}
-                                onChange={(e) => setForm({ ...form, published_date: e.target.value })}
-                                placeholder="2023-05-01"
-                            />
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        className={cn(
+                                            "w-full justify-start text-left font-normal",
+                                            !form.published_date && "text-muted-foreground"
+                                        )}
+                                    >
+                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                        {form.published_date
+                                            ? format(parseDateOnly(form.published_date) ?? new Date(), "PPP")
+                                            : <span>Pick a date</span>}
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                    <Calendar
+                                        mode="single"
+                                        selected={parseDateOnly(form.published_date)}
+                                        onSelect={(d) =>
+                                            setForm({ ...form, published_date: d ? formatDateUTC(d) : "" })
+                                        }
+                                        initialFocus
+                                        className={cn("p-3 pointer-events-auto")}
+                                    />
+                                </PopoverContent>
+                            </Popover>
                         </FormField>
                         <FormField label="Page count">
                             <Input
