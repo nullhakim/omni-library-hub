@@ -8,6 +8,7 @@ import BookDetail from "./pages/BookDetail"
 import LibraryBookDetail from "./pages/LibraryBookDetail"
 import Index from "./pages/Index"
 import NotFound from "./pages/NotFound"
+import Admin from "./pages/Admin"
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/book/:id" element={<BookDetail />} />
             <Route path="/library/:bookId" element={<LibraryBookDetail />} />
+            <Route path="/admin" element={<Admin />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
