@@ -126,7 +126,7 @@ export default function Admin() {
             authors: (book.authors || []).join(", "),
             description: book.description || "",
             cover_url: book.cover_url || "",
-            published_date: book.published_date || "",
+            published_date: toDateOnly(book.published_date),
             page_count: book.page_count || 0,
         })
         setDialogOpen(true)
