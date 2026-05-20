@@ -98,25 +98,26 @@ export default function Dashboard() {
                 ) : (
                     <ul className="divide-y divide-border">
                         {myLibrary.map((item) => {
-                            const pct = item.book?.page_count
-                                ? Math.round((item.current_page / item.book.page_count) * 100)
+                            const bookData = item.book || item.Book;
+                            const pct = bookData?.page_count
+                                ? Math.round((item.current_page / bookData.page_count) * 100)
                                 : 0
                             return (
                                 <li key={item.id}>
                                     <Link to={`/library/${item.id}`} className="grid grid-cols-12 gap-6 py-6 group items-center">
                                         <div className="col-span-2 sm:col-span-1">
                                             <div className="aspect-[2/3] bg-muted overflow-hidden rounded-sm">
-                                                {item.book?.cover_url ? (
-                                                    <img src={item.book.cover_url} alt="" className="w-full h-full object-cover" />
+                                                {bookData?.cover_url ? (
+                                                    <img src={bookData.cover_url} alt="" className="w-full h-full object-cover" />
                                                 ) : null}
                                             </div>
                                         </div>
                                         <div className="col-span-7 sm:col-span-6">
                                             <h3 className="font-display text-lg leading-snug group-hover:underline underline-offset-4 decoration-1 line-clamp-1">
-                                                {item.book?.title || "Untitled"}
+                                                {bookData?.title || "Untitled"}
                                             </h3>
                                             <p className="text-sm text-muted-foreground line-clamp-1 mt-1">
-                                                {item.book?.authors?.join(", ")}
+                                                {bookData?.authors?.join(", ")}
                                             </p>
                                         </div>
                                         <div className="col-span-3 sm:col-span-3">

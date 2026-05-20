@@ -103,7 +103,8 @@ export interface UserBookResponse {
   status: string;
   current_page: number;
   rating: number;
-  book: Book; // Relasi ke objek buku asli agar judul & cover bisa dirender
+  book?: Book; // Relasi ke objek buku asli agar judul & cover bisa dirender
+  Book?: Book;
 }
 
 // ==========================================

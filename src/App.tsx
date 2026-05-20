@@ -11,6 +11,8 @@ import NotFound from "./pages/NotFound"
 import Admin from "./pages/Admin"
 import Profile from "./pages/Profile"
 import VerifyEmail from "./pages/VerifyEmail"
+import ForgotPassword from "./pages/ForgotPassword"
+import ResetPassword from "./pages/ResetPassword"
 import EmailVerificationBanner from "./components/shared/EmailVerificationBanner"
 
 function App() {
@@ -31,6 +33,8 @@ function App() {
             <Route path="/profile" element={<Profile />} />
             {/* Email verification redirect from backend */}
             <Route path="/api/auth/verify-email" element={<VerifyEmail />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>

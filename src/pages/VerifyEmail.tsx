@@ -20,6 +20,21 @@ export default function VerifyEmail() {
         const verify = async () => {
             try {
                 await axiosInstance.get(`/api/auth/verify-email?token=${token}`)
+                
+                const refreshToken = typeof window !== "undefined" ? localStorage.getItem("refresh_token") : null;
+                if (refreshToken) {
+                    try {
+                        const refreshRes = await axiosInstance.post('/api/auth/refresh', { refresh_token: refreshToken });
+                        const newAccess = refreshRes.data?.data?.access_token || refreshRes.data?.access_token;
+                        const newRefresh = refreshRes.data?.data?.refresh_token || refreshRes.data?.refresh_token;
+                        if (newAccess) localStorage.setItem("access_token", newAccess);
+                        if (newRefresh) localStorage.setItem("refresh_token", newRefresh);
+                        window.dispatchEvent(new Event("auth-updated"));
+                    } catch (refreshErr) {
+                        console.error("Failed to refresh token after verification", refreshErr);
+                    }
+                }
+
                 setStatus("success")
                 setMessage("Your email address has been verified successfully.")
             } catch (err: any) {
@@ -81,11 +96,11 @@ export default function VerifyEmail() {
                         </div>
                         <div className="space-y-3">
                             <p className="text-xs text-muted-foreground border border-border rounded-lg px-4 py-3 bg-muted/40">
-                                Sign in again to refresh your session and gain full access.
+                                Your session has been updated. You now have full access.
                             </p>
-                            <Link to="/auth">
+                            <Link to="/dashboard">
                                 <Button className="w-full rounded-full h-11">
-                                    Sign in
+                                    Go to dashboard
                                 </Button>
                             </Link>
                             <Link to="/">

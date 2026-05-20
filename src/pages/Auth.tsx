@@ -70,6 +70,11 @@ export default function Auth() {
                     <TabsContent value="login" className="space-y-5 mt-2">
                         <Field id="email" label="Email" type="email" value={email} onChange={setEmail} />
                         <Field id="password" label="Password" type="password" value={password} onChange={setPassword} />
+                        <div className="flex justify-end mt-1">
+                            <Link to="/forgot-password" className="text-xs text-muted-foreground hover:text-foreground hover:underline underline-offset-4">
+                                Forgot password?
+                            </Link>
+                        </div>
                         <Button className="w-full rounded-full h-11" onClick={() => handleAuth('login')} disabled={loading}>
                             {loading ? "Signing in…" : "Sign in"}
                         </Button>

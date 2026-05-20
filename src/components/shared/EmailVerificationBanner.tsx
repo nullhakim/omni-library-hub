@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { toast } from "sonner"
 import { MailWarning, X, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -7,7 +7,20 @@ import { isEmailVerified, decodeJwt, getAccessToken } from "@/lib/auth"
 import axiosInstance from "@/api/axiosInstance"
 
 export default function EmailVerificationBanner() {
-    const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
+    const [token, setToken] = useState(typeof window !== "undefined" ? localStorage.getItem("access_token") : null)
+
+    useEffect(() => {
+        const handleAuthUpdate = () => {
+            setToken(localStorage.getItem("access_token"))
+        }
+        window.addEventListener("auth-updated", handleAuthUpdate)
+        window.addEventListener("storage", handleAuthUpdate)
+        return () => {
+            window.removeEventListener("auth-updated", handleAuthUpdate)
+            window.removeEventListener("storage", handleAuthUpdate)
+        }
+    }, [])
+
     const verified = isEmailVerified()
 
     // Get email from JWT to include in resend request body
