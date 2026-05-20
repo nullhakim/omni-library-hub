@@ -48,3 +48,11 @@ export function isAdmin(): boolean {
     if (Array.isArray(payload.roles) && payload.roles.includes("admin")) return true
     return false
 }
+
+export function isEmailVerified(): boolean {
+    const payload = decodeJwt(getAccessToken())
+    if (!payload) return true // not logged in — don't show banner
+    // If claim is absent (old token), default true to avoid false positives
+    if (!('is_email_verified' in payload)) return true
+    return payload.is_email_verified === true
+}

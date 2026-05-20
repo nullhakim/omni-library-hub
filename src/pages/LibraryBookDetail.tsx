@@ -138,8 +138,11 @@ export default function LibraryBookDetail() {
     if (loading) return <div className="py-32 text-center text-muted-foreground text-sm">Loading…</div>
     if (!data) return null
 
-    const progressPercentage = data.book.page_count
-        ? Math.round((data.current_page / data.book.page_count) * 100)
+    const bookData = data.book || data.Book;
+    if (!bookData) return null;
+
+    const progressPercentage = bookData.page_count
+        ? Math.round((data.current_page / bookData.page_count) * 100)
         : 0
 
     return (
@@ -155,15 +158,15 @@ export default function LibraryBookDetail() {
                 {/* Left: cover + meta */}
                 <aside className="md:col-span-4 space-y-6">
                     <div className="aspect-[2/3] bg-muted overflow-hidden rounded-sm">
-                        {data.book.cover_url ? (
-                            <img src={data.book.cover_url} alt={data.book.title} className="w-full h-full object-cover" />
+                        {bookData.cover_url ? (
+                            <img src={bookData.cover_url} alt={bookData.title} className="w-full h-full object-cover" />
                         ) : null}
                     </div>
 
                     <dl className="space-y-4 text-sm border-t border-border pt-6">
-                        <MetaRow label="ISBN" value={data.book.isbn || "—"} />
-                        <MetaRow label="Year" value={new Date(data.book.published_date).getFullYear() || "—"} />
-                        <MetaRow label="Pages" value={data.book.page_count} />
+                        <MetaRow label="ISBN" value={bookData.isbn || "—"} />
+                        <MetaRow label="Year" value={new Date(bookData.published_date).getFullYear() || "—"} />
+                        <MetaRow label="Pages" value={bookData.page_count} />
                     </dl>
 
                     <button
@@ -176,9 +179,9 @@ export default function LibraryBookDetail() {
 
                 {/* Right: main */}
                 <section className="md:col-span-8">
-                    <p className="text-sm text-muted-foreground mb-3">{data.book.authors.join(", ")}</p>
+                    <p className="text-sm text-muted-foreground mb-3">{bookData.authors?.join(", ") || ""}</p>
                     <h1 className="font-display text-4xl md:text-5xl tracking-tight leading-[1.1] mb-8">
-                        {data.book.title}
+                        {bookData.title}
                     </h1>
 
                     {/* Progress strip */}
@@ -225,7 +228,7 @@ export default function LibraryBookDetail() {
                         </div>
 
                         <div className="flex items-center justify-between text-xs text-muted-foreground mb-2 mt-4">
-                            <span>{data.current_page} / {data.book.page_count} pages</span>
+                            <span>{data.current_page} / {bookData.page_count} pages</span>
                             <span>{progressPercentage}%</span>
                         </div>
                         <Progress value={progressPercentage} className="h-1" />
@@ -253,7 +256,7 @@ export default function LibraryBookDetail() {
 
                         <TabsContent value="overview" className="pt-8">
                             <p className="text-foreground/85 leading-[1.8] whitespace-pre-line">
-                                {data.book.description || "No description available."}
+                                {bookData.description || "No description available."}
                             </p>
                         </TabsContent>
 
@@ -359,7 +362,7 @@ export default function LibraryBookDetail() {
                     </DialogHeader>
                     <div className="py-2 space-y-3">
                         <p className="text-muted-foreground leading-relaxed">
-                            <span className="text-foreground">{data.book.title}</span> will be removed from your shelf along with all progress, ratings, and journal entries.
+                            <span className="text-foreground">{bookData.title}</span> will be removed from your shelf along with all progress, ratings, and journal entries.
                         </p>
                     </div>
                     <DialogFooter>

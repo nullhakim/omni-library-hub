@@ -57,6 +57,31 @@ export interface FetchBookRequest {
 }
 
 // ==========================================
+// USER PROFILE TYPES
+// ==========================================
+
+export interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  is_email_verified: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UpdateProfileRequest {
+  name: string;
+  email: string;
+}
+
+export interface UpdatePasswordRequest {
+  old_password: string;
+  new_password: string;
+  confirm_password: string;
+}
+
+// ==========================================
 // LIBRARY & USER_BOOK TYPES
 // ==========================================
 
@@ -78,7 +103,8 @@ export interface UserBookResponse {
   status: string;
   current_page: number;
   rating: number;
-  book: Book; // Relasi ke objek buku asli agar judul & cover bisa dirender
+  book?: Book; // Relasi ke objek buku asli agar judul & cover bisa dirender
+  Book?: Book;
 }
 
 // ==========================================
