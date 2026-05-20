@@ -19,7 +19,7 @@ export default function VerifyEmail() {
 
         const verify = async () => {
             try {
-                await axiosInstance.get(`/api/verify-email?token=${token}`)
+                await axiosInstance.get(`/api/auth/verify-email?token=${token}`)
                 setStatus("success")
                 setMessage("Your email address has been verified successfully.")
             } catch (err: any) {
