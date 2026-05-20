@@ -9,12 +9,16 @@ import LibraryBookDetail from "./pages/LibraryBookDetail"
 import Index from "./pages/Index"
 import NotFound from "./pages/NotFound"
 import Admin from "./pages/Admin"
+import Profile from "./pages/Profile"
+import VerifyEmail from "./pages/VerifyEmail"
+import EmailVerificationBanner from "./components/shared/EmailVerificationBanner"
 
 function App() {
   return (
     <Router>
       <div className="min-h-screen bg-background text-foreground flex flex-col">
         <Navbar />
+        <EmailVerificationBanner />
         <main className="flex-1">
           <Routes>
             <Route path="/" element={<Index />} />
@@ -24,6 +28,9 @@ function App() {
             <Route path="/book/:id" element={<BookDetail />} />
             <Route path="/library/:bookId" element={<LibraryBookDetail />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/profile" element={<Profile />} />
+            {/* Email verification redirect from backend */}
+            <Route path="/api/auth/verify-email" element={<VerifyEmail />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
@@ -40,3 +47,4 @@ function App() {
 }
 
 export default App
+

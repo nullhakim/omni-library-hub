@@ -57,6 +57,31 @@ export interface FetchBookRequest {
 }
 
 // ==========================================
+// USER PROFILE TYPES
+// ==========================================
+
+export interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  is_email_verified: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UpdateProfileRequest {
+  name: string;
+  email: string;
+}
+
+export interface UpdatePasswordRequest {
+  old_password: string;
+  new_password: string;
+  confirm_password: string;
+}
+
+// ==========================================
 // LIBRARY & USER_BOOK TYPES
 // ==========================================
 
